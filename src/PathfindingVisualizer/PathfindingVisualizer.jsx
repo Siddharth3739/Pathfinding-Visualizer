@@ -4,8 +4,8 @@ import {dijkstra, getNodesInShortestPathOrder} from '../algorithms/dijkstra';
 
 import './PathfindingVisualizer.css';
 
-const START_NODE_ROW = 10;
-const START_NODE_COL = 15;
+let START_NODE_ROW = 10;
+let START_NODE_COL = 15;
 const FINISH_NODE_ROW = 10;
 const FINISH_NODE_COL = 35;
 
@@ -15,15 +15,42 @@ export default class PathfindingVisualizer extends Component {
     this.state = {
       grid: [],
       mouseIsPressed: false,
+      changingStart: false,
     };
   }
-
+  
+  removeStartNode()
+  {
+    if(START_NODE_ROW==-1||START_NODE_COL==-1)
+    return;
+    const newGrid=this.state.grid.slice();
+    const node=newGrid[START_NODE_ROW][START_NODE_COL];
+    node.isStart=false;
+    START_NODE_ROW=-1;
+    START_NODE_COL=-1;
+    this.setState({grid:newGrid,changingStart:true});
+  }
+  insertNewStart(row,col)
+  {
+    START_NODE_ROW=row;
+    START_NODE_COL=col;
+    let newGrid=this.state.grid.slice();
+    let node=newGrid[START_NODE_ROW][START_NODE_COL];
+    node.isStart=true;
+    this.setState({grid:newGrid,changingStart:false});
+    return;
+  }
   componentDidMount() {
     const grid = getInitialGrid();
     this.setState({grid});
   }
 
   handleMouseDown(row, col) {
+    if(this.state.changingStart)
+    {
+       this.insertNewStart(row,col);
+       return;
+    }
     const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
     this.setState({grid: newGrid, mouseIsPressed: true});
   }
@@ -80,6 +107,9 @@ export default class PathfindingVisualizer extends Component {
       <>
         <button onClick={() => this.visualizeDijkstra()}>
           Visualize Dijkstra's Algorithm
+        </button>
+        <button onClick={() => this.removeStartNode()}>
+          Change start node
         </button>
         <div className="grid">
           {grid.map((row, rowIdx) => {
@@ -147,3 +177,4 @@ const getNewGridWithWallToggled = (grid, row, col) => {
   newGrid[row][col] = newNode;
   return newGrid;
 };
+
