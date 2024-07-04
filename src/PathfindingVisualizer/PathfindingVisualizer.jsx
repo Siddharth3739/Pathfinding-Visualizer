@@ -30,6 +30,7 @@ export default class PathfindingVisualizer extends Component {
     START_NODE_ROW=-1;
     START_NODE_COL=-1;
     this.setState({grid:newGrid,changingStart:true});
+    this.clear();
   }
   insertNewStart(row,col)
   {
@@ -199,6 +200,7 @@ const createNode = (col, row) => {
     isFinish: row === FINISH_NODE_ROW && col === FINISH_NODE_COL,
     distance: Infinity,
     isVisited: false,
+    weight: 1,
     isWall: false,
     previousNode: null,
   };
