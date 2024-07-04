@@ -40,8 +40,9 @@ export default class PathfindingVisualizer extends Component {
     START_NODE_ROW=row;
     START_NODE_COL=col;
     let newGrid=this.state.grid.slice();
-    let node=newGrid[START_NODE_ROW][START_NODE_COL];
+    let node=createNode(col,row);
     node.isStart=true;
+    newGrid[row][col]=node;
     this.setState({grid:newGrid,changingStart:false});
     return;
   }

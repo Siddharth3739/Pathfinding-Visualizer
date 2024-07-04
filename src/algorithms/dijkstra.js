@@ -4,12 +4,12 @@ import {
 } from
   "@datastructures-js/priority-queue";
  
-  const visitedNodesInOrder = [];
+  
 
 export function dijkstra(grid, startNode, finishNode) {
   const pq=new MinPriorityQueue( (node)=>node.distance
   );
-
+  const visitedNodesInOrder = [];
   startNode.distance = 0;
   pq.enqueue(startNode);
   while(!pq.isEmpty())
