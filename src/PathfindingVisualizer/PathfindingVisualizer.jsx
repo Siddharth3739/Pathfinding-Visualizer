@@ -17,6 +17,9 @@ export default class PathfindingVisualizer extends Component {
       grid: [],
       mouseIsPressed: false,
       changingStart: false,
+      type: "",
+      WallButtonText: "Insert Wall",
+      ModifyWeightText: "Modify Node Weights",
     };
   }
   
@@ -58,7 +61,7 @@ export default class PathfindingVisualizer extends Component {
       }
       newGrid.push(currentRow);
     }
-    this.setState({grid:newGrid});
+    this.setState({grid:newGrid,type:"", WallButtonText: "Insert Wall",ModifyWeightText: "Modify Node Weights"});
     var id = window.setTimeout(function() {}, 0);
     while (id--) {
         window.clearTimeout(id);
@@ -76,14 +79,38 @@ export default class PathfindingVisualizer extends Component {
        this.insertNewStart(row,col);
        return;
     }
-    const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-    this.setState({grid: newGrid, mouseIsPressed: true});
+    if(this.state.type=="")
+    return;
+    if(this.state.type=="Wall")
+    {
+     const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+     this.setState({grid: newGrid, mouseIsPressed: true});
+     return;
+    }
+    if(this.state.type=="Modify")
+    {
+     const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+     this.setState({grid: newGrid, mouseIsPressed: true});
+     return;
+    }
   }
 
   handleMouseEnter(row, col) {
     if (!this.state.mouseIsPressed) return;
-    const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
-    this.setState({grid: newGrid});
+    if(this.state.type=="")
+    return;
+    if(this.state.type=="Wall")
+    {
+      const newGrid = getNewGridWithWallToggled(this.state.grid, row, col);
+      this.setState({grid: newGrid});
+      return;
+    }
+    if(this.state.type=="Modify")
+    {
+      const newGrid = getNewGridWithWeightToggled(this.state.grid, row, col);
+      this.setState({grid: newGrid, mouseIsPressed: true});
+      return;
+    }
   }
 
   handleMouseUp() {
@@ -134,9 +161,30 @@ export default class PathfindingVisualizer extends Component {
     const nodesInShortestPathOrder = getNodesInShortestPathOrder(finishNode);
     this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
   }
-
+  insertWall()
+  {
+    if(this.state.type=="")
+    {
+      this.setState({type:"Wall",WallButtonText:"Inserting Walls"});
+    }
+    else if(this.state.type=="Wall")
+    {
+      this.setState({type:"",WallButtonText:"Insert Wall"});
+    }
+  }
+  ModifyWeight()
+  {
+    if(this.state.type=="")
+    {
+      this.setState({type:"Modify",ModifyWeightText:"Modifying Node weights"});
+    }
+    else if(this.state.type=="Modify")
+    {
+      this.setState({type:"",ModifyWeightText:"Modify Node weights"});
+    }
+  }
   render() {
-    const {grid, mouseIsPressed} = this.state;
+    const {grid, mouseIsPressed,WallButtonText,ModifyWeightText} = this.state;
 
     return (
       <>
@@ -149,12 +197,18 @@ export default class PathfindingVisualizer extends Component {
         <button onClick={() => this.removeStartNode()}>
           Change start node
         </button>
+        <button onClick={() => this.insertWall()}>
+          {WallButtonText}
+        </button>
+        <button onClick={() => this.ModifyWeight()}>
+          {ModifyWeightText}
+        </button>
         <div className="grid">
           {grid.map((row, rowIdx) => {
             return (
               <div key={rowIdx}>
                 {row.map((node, nodeIdx) => {
-                  const {row, col, isFinish, isStart, isWall} = node;
+                  const {row, col, isFinish, isStart, isWall,isWeighted} = node;
                   return (
                     <Node
                       key={nodeIdx}
@@ -162,6 +216,7 @@ export default class PathfindingVisualizer extends Component {
                       isFinish={isFinish}
                       isStart={isStart}
                       isWall={isWall}
+                      isWeighted={isWeighted}
                       mouseIsPressed={mouseIsPressed}
                       onMouseDown={(row, col) => this.handleMouseDown(row, col)}
                       onMouseEnter={(row, col) =>
@@ -201,6 +256,7 @@ const createNode = (col, row) => {
     distance: Infinity,
     isVisited: false,
     weight: 1,
+    isWeighted: false,
     isWall: false,
     previousNode: null,
   };
@@ -212,6 +268,18 @@ const getNewGridWithWallToggled = (grid, row, col) => {
   const newNode = {
     ...node,
     isWall: !node.isWall,
+  };
+  newGrid[row][col] = newNode;
+  return newGrid;
+};
+
+const getNewGridWithWeightToggled = (grid, row, col) => {
+  const newGrid = grid.slice();
+  const node = newGrid[row][col];
+  const newNode = {
+    ...node,
+    weight: node.isWeighted?1:2,
+    isWeighted: !node.isWeighted,
   };
   newGrid[row][col] = newNode;
   return newGrid;
